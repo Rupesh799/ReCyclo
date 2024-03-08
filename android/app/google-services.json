@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "273095544509",
+    "project_id": "wastehub-d4295",
+    "storage_bucket": "wastehub-d4295.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273095544509:android:63ef7323edca007905f1d4",
+        "android_client_info": {
+          "package_name": "com.example.wastehub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvlX1RSAPwG0cyzzOMigVb2TTyjTOSmJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
