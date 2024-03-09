@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:Recyclo/authentication/auth_service.dart';
 import 'package:Recyclo/screens/auth_ui/login.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class Signup extends StatefulWidget {
@@ -107,7 +108,7 @@ class _SignupState extends State<Signup> {
             .createUserWithEmailAndPassword(email: email, password: password);
 
         // Emit 'register_seller' event to the Socket.IO server
-        socket.emit('register_seller',{
+        socket.emit('register_seller', {
           'fullname': fullName,
           'email': email,
           'phone': phone,
@@ -127,15 +128,22 @@ class _SignupState extends State<Signup> {
         });
 
         // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-              "Registered Succesfully!",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            backgroundColor: Color.fromARGB(255, 8, 149, 128)));
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     content: Text(
+        //       "Registered Succesfully!",
+        //       style: TextStyle(
+        //         fontSize: 18,
+        //         fontWeight: FontWeight.w600,
+        //       ),
+        //     ),
+        //     backgroundColor: Color.fromARGB(255, 8, 149, 128)));
+        Fluttertoast.showToast(
+          msg: "You have been successfully registered",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Color.fromARGB(255, 8, 149, 128),
+          textColor: Colors.white,
+        );
 
         // ignore: use_build_context_synchronously
         Navigator.push(
@@ -199,15 +207,22 @@ class _SignupState extends State<Signup> {
         });
 
         // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-              "Registered Succesfully!",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            backgroundColor: Color.fromARGB(255, 8, 149, 128)));
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     content: Text(
+        //       "Registered Succesfully!",
+        //       style: TextStyle(
+        //         fontSize: 18,
+        //         fontWeight: FontWeight.w600,
+        //       ),
+        //     ),
+        //     backgroundColor: Color.fromARGB(255, 8, 149, 128)));
+        Fluttertoast.showToast(
+          msg: "You have been successfully registered",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Color.fromARGB(255, 8, 149, 128),
+          textColor: Colors.white,
+        );
 
         // ignore: use_build_context_synchronously
         Navigator.push(

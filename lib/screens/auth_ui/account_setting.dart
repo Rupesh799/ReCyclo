@@ -2,15 +2,15 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:wastehub/authentication/authentication_repository.dart';
 import 'package:Recyclo/screens/auth_ui/login.dart';
 import 'package:Recyclo/screens/auth_ui/user_profile.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:Recyclo/screens/basic/feedback.dart';
 import 'package:Recyclo/screens/auth_ui/about_us.dart';
 import 'package:Recyclo/screens/auth_ui/contact.dart';
 import 'package:Recyclo/screens/auth_ui/settings.dart';
-// import 'package:get/get.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class AccountSetting extends StatefulWidget {
   const AccountSetting({super.key});
@@ -26,51 +26,68 @@ class _AccountSettingState extends State<AccountSetting> {
   User? _user;
   Map<String, dynamic>? _userData;
 
+  late io.Socket socket;
+
   @override
   void initState() {
     super.initState();
     _getUserData();
+    _initializeSocket();
   }
 
   Future<void> _getUserData() async {
     User? user = _auth.currentUser;
 
     if (user != null) {
-  DocumentSnapshot<Map<String, dynamic>> snapshot;
+      DocumentSnapshot<Map<String, dynamic>> snapshot;
 
-  // Check the userType from the 'buyers' collection
-  snapshot = await _firestore.collection('buyers').doc(user.uid).get();
+      // Check the userType from the 'buyers' collection
+      snapshot = await _firestore.collection('buyers').doc(user.uid).get();
 
-  if (snapshot == null || !snapshot.exists) {
-    // If not found in 'buyers', check the 'sellers' collection
-    snapshot = await _firestore.collection('sellers').doc(user.uid).get();
+      if (snapshot == null || !snapshot.exists) {
+        // If not found in 'buyers', check the 'sellers' collection
+        snapshot = await _firestore.collection('sellers').doc(user.uid).get();
+      }
+
+      setState(() {
+        _user = user;
+        _userData = snapshot.data();
+      });
+    }
   }
 
-  setState(() {
-    _user = user;
-    _userData = snapshot.data();
-  });
-}
-  }
+  void _initializeSocket() {
+    // Replace with your server URL
+    socket = io.io('http://your-server-url', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
 
-  // Logout() async {
-  //   await _auth.signOut();
-  //   Navigator.pushReplacement(
-  //       context, MaterialPageRoute(builder: (context) => Login()));
-  // }
+    socket.connect();
+
+    socket.onConnect((data) {
+      print('Socket connected: ${socket.id}');
+      setState(() {
+        _userData?['socketId'] = socket.id;
+      });
+    });
+  }
 
   //image upload
   File? _image;
   final ImagePicker _picker = ImagePicker();
 
-Future<void> _pickImage() async {
-  // Replace the image picking logic with setting a default image
-  setState(() {
-    _image = null; // Set _image to null to indicate no custom image
-  });
-}
+  Future<void> _pickImage() async {
+    // Replace the image picking logic with setting a default image
+    setState(() {
+      _image = null; // Set _image to null to indicate no custom image
+    });
+  }
 
-//Logout conformation
+  //Logout conformation
+  void Logout() {
+    _showLogoutConfirmationDialog();
+  }
 
   Future<void> _showLogoutConfirmationDialog() async {
     return showDialog(
@@ -88,7 +105,25 @@ Future<void> _pickImage() async {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop(); // Close the dialog
+
+                // Emit the logout event with the socket ID
+                final socketId = _userData?['socketId'];
+                if (socketId != null) {
+                  if (_userData?['userType'] == 'seller') {
+                    socket.emit('seller_logout', socketId);
+                  } else if (_userData?['userType'] == 'buyer') {
+                    socket.emit('buyer_logout', socketId);
+                  }
+                }
+
                 await _auth.signOut();
+                Fluttertoast.showToast(
+              msg: "you are logged out",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Color.fromARGB(255, 8, 149, 128),
+              textColor: Colors.white,
+            );
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => Login()),
@@ -100,10 +135,6 @@ Future<void> _pickImage() async {
         );
       },
     );
-  }
-
-  void Logout() {
-    _showLogoutConfirmationDialog();
   }
 
   @override
@@ -121,22 +152,20 @@ Future<void> _pickImage() async {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: GestureDetector(
                           onTap: _pickImage,
-                          child: 
-                          Container(
-                              height: 80,
-                              width: 80,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
-                              child: _image == null
-                                  ? Image.asset(
-                                      'assets/images/person.png', // Replace with your asset path
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
+                          child: Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
                             ),
-
+                            child: _image == null
+                                ? Image.asset(
+                                    'assets/images/person.png', // Replace with your asset path
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -201,7 +230,8 @@ Future<void> _pickImage() async {
                     child: Column(
                       children: [
                         InkWell(
-                          onTap: () {Navigator.push(
+                          onTap: () {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SettingScreen(),
@@ -213,7 +243,8 @@ Future<void> _pickImage() async {
                               Icons.settings,
                               color: Color.fromARGB(255, 40, 125, 112),
                               size: 30,
-                            ),SizedBox(
+                            ),
+                            SizedBox(
                               width: 12,
                             ),
                             Text(
@@ -226,7 +257,6 @@ Future<void> _pickImage() async {
                         const SizedBox(
                           height: 45,
                         ),
-                        
                         const Row(children: [
                           Icon(
                             Icons.money,
@@ -242,7 +272,6 @@ Future<void> _pickImage() async {
                                 fontSize: 16, fontWeight: FontWeight.w700),
                           ),
                         ]),
-                        
                         const SizedBox(
                           height: 45,
                         ),
@@ -255,21 +284,21 @@ Future<void> _pickImage() async {
                               ),
                             );
                           },
-                        child : const Row(children: [
-                          Icon(
-                            Icons.info,
-                            color: Color.fromARGB(255, 40, 125, 112),
-                            size: 30,
-                          ),
-                          SizedBox(
-                            width: 12,
-                          ),
-                          Text(
-                            "About Us",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                        ]),
+                          child: const Row(children: [
+                            Icon(
+                              Icons.info,
+                              color: Color.fromARGB(255, 40, 125, 112),
+                              size: 30,
+                            ),
+                            SizedBox(
+                              width: 12,
+                            ),
+                            Text(
+                              "About Us",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700),
+                            ),
+                          ]),
                         ),
                         const SizedBox(
                           height: 45,
@@ -283,59 +312,59 @@ Future<void> _pickImage() async {
                               ),
                             );
                           },
-                      child : const Row(children: [
-                          Icon(
-                            Icons.phone,
-                            color: Color.fromARGB(255, 40, 125, 112),
-                            size: 30,
-                          ),
-                          SizedBox(
-                            width: 12,
-                          ),
-                          Text(
-                            "Contact",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700),
-                          ),                         
-                        ]),
-                        ),
-                        
-                        const SizedBox(
-                          height: 45,
-                        ),
-
-                        InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FeedbackPage(userType: _userData?['userType']?? ''),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.feedback,
-                                  color: Color.fromARGB(255, 40, 125, 112),
-                                  size: 30,
-                                ),
-                                SizedBox(
-                                  width: 12,
-                                ),
-                                Text(
-                                  "Feedback",
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                                ),
-                              ],
+                          child: const Row(children: [
+                            Icon(
+                              Icons.phone,
+                              color: Color.fromARGB(255, 40, 125, 112),
+                              size: 30,
                             ),
+                            SizedBox(
+                              width: 12,
                             ),
-
+                            Text(
+                              "Contact",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700),
+                            ),
+                          ]),
+                        ),
                         const SizedBox(
                           height: 45,
                         ),
                         InkWell(
                           onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FeedbackPage(
+                                    userType: _userData?['userType'] ?? ''),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.feedback,
+                                color: Color.fromARGB(255, 40, 125, 112),
+                                size: 30,
+                              ),
+                              SizedBox(
+                                width: 12,
+                              ),
+                              Text(
+                                "Feedback",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 45,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            
                             Logout();
                           },
                           child: const Row(children: [

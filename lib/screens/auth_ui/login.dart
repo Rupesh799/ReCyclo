@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:Recyclo/screens/basic/buyer_home.dart';
 import 'package:Recyclo/screens/basic/seller_home.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 enum UserType { Seller, Buyer }
 
@@ -26,6 +28,24 @@ class _LoginState extends State<Login> {
   TextEditingController passwordController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  late io.Socket socket;
+
+  @override
+  void initState() {
+    super.initState();
+    // Replace the URL with your server URL
+    socket = io.io('http://192.168.10.71:3000', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+    socket.connect();
+  }
+
+  // @override
+  // void dispose() {
+  //   socket.disconnect();
+  //   super.dispose();
+  // }
 
   userLogin() async {
     try {
@@ -40,11 +60,27 @@ class _LoginState extends State<Login> {
             .collection('sellers')
             .doc(userCredential.user?.uid)
             .get();
+        if (userDoc.exists && userDoc.get('userType') == 'Seller') {
+          socket.emit('seller_login', {
+            'sellerId': userCredential.user?.uid,
+            'sellerName': userDoc.get('fullname'),
+            'sellerEmail': userDoc.get('email'),
+            // Add any other relevant seller information
+          });
+        }
       } else {
         userDoc = await FirebaseFirestore.instance
             .collection('buyers')
             .doc(userCredential.user?.uid)
             .get();
+        if (userDoc.exists && userDoc.get('userType') == 'Buyer') {
+          socket.emit('buyer_login', {
+            'buyerId': userCredential.user?.uid,
+            'buyerName': userDoc.get('fullname'),
+            'buyerEmail': userDoc.get('email'),
+            // Add any other relevant seller information
+          });
+        }
       }
 
       // Check if the user document exists and contains the 'userType' field
@@ -55,13 +91,26 @@ class _LoginState extends State<Login> {
         if ((selectedUserType == UserType.Seller && userType == 'Seller') ||
             (selectedUserType == UserType.Buyer && userType == 'Buyer')) {
           if (selectedUserType == UserType.Buyer) {
+            Fluttertoast.showToast(
+              msg: "Loggedin Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Color.fromARGB(255, 8, 149, 128),
+              textColor: Colors.white,
+            );
             // If the user is a buyer, navigate to BuyerHome and exit the app
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const BuyerHome()),
-              
             );
           } else {
+            Fluttertoast.showToast(
+              msg: "Loggedin Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Color.fromARGB(255, 8, 149, 128),
+              textColor: Colors.white,
+            );
             // If the user is a seller, navigate to Home
             Navigator.pushReplacement(
               context,

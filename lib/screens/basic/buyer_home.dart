@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
@@ -646,6 +647,14 @@ class SellerInfoPanel extends StatelessWidget {
     bool? confirmCancel = await showCancelConfirmationDialog(context);
 
     if (confirmCancel == true) {
+      // Navigator.pop(context);
+      // Fluttertoast.showToast(
+      //   msg: "Your request has been cancelled",
+      //   toastLength: Toast.LENGTH_SHORT,
+      //   gravity: ToastGravity.BOTTOM,
+      //   backgroundColor: Colors.black,
+      //   textColor: Colors.white,
+      // );
       // Perform cancellation actions here
     }
   }
@@ -656,7 +665,7 @@ class SellerInfoPanel extends StatelessWidget {
       borderRadius: BorderRadius.horizontal(
           left: Radius.circular(10), right: Radius.circular(10)),
       minHeight: 50,
-      maxHeight: MediaQuery.of(context).size.height - 500,
+      maxHeight: MediaQuery.of(context).size.height - 400,
       panel: Container(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -682,7 +691,7 @@ class SellerInfoPanel extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green),
+                    color: Color.fromARGB(255, 8, 149, 128)),
               ),
             ),
             SizedBox(height: 10),
@@ -701,28 +710,51 @@ class SellerInfoPanel extends StatelessWidget {
                   'Location: ${sellerInfo.locationName}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Phone: ${sellerInfo.PhoneNumber}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Phone: ${sellerInfo.PhoneNumber}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    CircleAvatar(
+                      
+                      // color: Colors.green,
+                      radius: 20,
+                      backgroundColor: Color.fromARGB(255, 8, 149, 128),
+                      child: IconButton( onPressed: () {  },
+                                        icon: const Icon(Icons.call,color: Colors.white,),),
+                    ),
+                  ],
                 ),
                 SizedBox(
                   height: 20,
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    cancelRequest(context);
+                GestureDetector(
+                  onTap: () {
+                    // Check if onCancelPressed is not null, then call it
+                    cancelRequest.call(context);
                   },
-                  child: Text(
-                    "Cancel Request",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.red
+                    ),
+                    padding: EdgeInsets.all(12),
+                    // color: Color.fromARGB(255, 187, 16, 4),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Cancel Request',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent),
-                )
+                ),
               ],
             )
             // Add more seller information as needed
