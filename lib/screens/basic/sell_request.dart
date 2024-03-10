@@ -1,22 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:async';
-// import 'dart:math';
 import 'package:Recyclo/main.dart';
-import 'package:Recyclo/screens/basic/buyerinformation.dart';
-// import 'package:Recyclo/screens/basic/buyerinformation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:location/location.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-// import 'package:flutter_google_maps_webservices/places.dart';
-// import 'package:url_launcher/url_launcher.dart';
 import 'package:Recyclo/screens/basic/finding_buyer_animation.dart';
 
 class SellRequest extends StatefulWidget {
@@ -61,42 +54,28 @@ class _SellRequestState extends State<SellRequest> {
     PhoneNumber: '',
   );
 
-  // void setBuyerInformation(Map<String, dynamic> buyerInfo) {
-  //   setState(() {
-  //     hasBuyerInformation = true;
-  //     buyerName = buyerInfo['buyerName'];
-  //     buyerPhone = buyerInfo['buyerPhoneNumber'];
-  //     buyerPlaceName = buyerInfo['buyerPlaceName'];
-  //     selectedBuyerLocation = LatLng(
-  //       buyerInfo['buyerLocation']['latitude'],
-  //       buyerInfo['buyerLocation']['longitude'],
-  //     );
-  //     selectedBuyer = buyerInfo;
-  //   });
+void noBuyerRecived() {
+    setState(() {
+      showFindingBuyerAnimation = false;
+    });
+    Fluttertoast.showToast(
+      msg: "No buyer found",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Color.fromARGB(255, 8, 149, 128),
+      textColor: Colors.white,
+    );
+  }
 
-  //   // Open the sliding panel when buyer information is received
-  //   _pc.open();
-  // }
 
   @override
   void initState() {
     super.initState();
 
-    //   socket = io.io('http://192.168.10.71:3000', <String, dynamic>{
-    //   'transports': ['websocket'],
-    //   'autoConnect': false,
-    // });
-
     socket.connect();
     userMarker = Marker(markerId: const MarkerId('currentLocation'));
     getCurrentLocationOfUserAndFetchName();
     getCurrentLocation();
-
-    // buyerInfo = BuyerInfo(
-    //   name: '',
-    //   locationName: '',
-    //   PhoneNumber: '',
-    // );
 
     socket.on('buyer_information', (data) {
       print('buyer information: $data');
@@ -122,52 +101,9 @@ class _SellRequestState extends State<SellRequest> {
 
       // setBuyerInformation(data);
     });
+
+    socket.on('no_buyer',(data) => noBuyerRecived());
   }
-
-  // Function to handle cancel button press
-  // void onCancelPressed(BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text("Cancel Request"),
-  //         content: Text("Are you sure you want to cancel your request?"),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               // Dismiss the dialog
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text("No"),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               // Clear buyer information and reset the panel
-  //               clearBuyerInformation();
-
-  //               // Close the current panel (BuyerInformationBox)
-  //               _pc.close();
-
-  //               // Show a confirmation message
-  //               ScaffoldMessenger.of(context).showSnackBar(
-  //                 SnackBar(
-  //                   content: Text('Your request has been cancelled.'),
-  //                 ),
-  //               );
-
-  //               // Navigate back to the sell request screen
-  //               Navigator.pop(context);
-
-  //               // Dismiss the dialog
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text("Yes"),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
 // Method to build the sliding panel content for buyer information
   Widget buildBuyerInfoPanel() {
@@ -603,7 +539,7 @@ class BuyerInfoPanel extends StatelessWidget {
     String? cancelledMessage = "Request has been cancelled by seller";
 
     if (confirmCancel == true) {
-      socket.emit('cancel_process',cancelledMessage);
+      socket.emit('cancel_process', cancelledMessage);
       // Perform cancellation actions here
       Navigator.pop(context);
       Fluttertoast.showToast(

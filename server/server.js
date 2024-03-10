@@ -20,6 +20,7 @@ server.listen(port, () => {
 const buyers = []; // Store connected buyers
 const sellers = [];
 
+
 // Function to calculate distance between two points (Haversine formula)
 function getDistance(location1, location2) {
   const lat1 = location1.latitude;
@@ -211,24 +212,27 @@ io.on("connection", (socket) => {
     // Add your specific logic here
   });
   //seller
-// emit("selected_buyer")
-// //server
-// on(selected_buyer){
-//   emit("buyer_related_data")
-// }
-// //buyer
-// on("buyer_related_data"){
 
-// }
 
   socket.on("reject_request", (data) => {
     // Handle the rejected request logic
     console.log("Seller request rejected by the client", data);
-    // Add your specific logic here
+
+    io.emit("no_buyer",{
+      
+    })
+    
   });
 
   socket.on("cancel_process", (data)=>{
     console.log(data);
-    io.emit( 'pickup_canceled' );
+    
+      io.emit('cancel',{
+
+      });
+      console.log("Emitted cancellation to:");
+    
+   
+    
   })
 });

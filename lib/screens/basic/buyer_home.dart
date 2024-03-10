@@ -59,6 +59,19 @@ class _BuyerHomeState extends State<BuyerHome> {
     });
   }
 
+  void cancelledRequestRecived() {
+    setState(() {
+      hasAcceptedRequest = false;
+    });
+    Fluttertoast.showToast(
+      msg: "seller cancelled the request",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Color.fromARGB(255, 8, 149, 128),
+      textColor: Colors.white,
+    );
+  }
+
   void initState() {
     super.initState();
     //initialization of socket
@@ -70,20 +83,7 @@ class _BuyerHomeState extends State<BuyerHome> {
     socket.connect();
     // futerFn().then{}
 
-    
     buyer().then((value) {
-      socket.on(
-          'pickup_canceled',
-          (data) => {
-                Fluttertoast.showToast(
-                  msg: "seller cancelled the request",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  backgroundColor: Color.fromARGB(255, 8, 149, 128),
-                  textColor: Colors.white,
-                )
-              });
-
       // Listen for the pickup_request _user.email
       socket.on(_user?.email ?? "", (data) {
         print('Seller request received: $data');
@@ -129,16 +129,7 @@ class _BuyerHomeState extends State<BuyerHome> {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
 
-                    // SizedBox(height: 10),
-                    // Text(
-                    //   'Waste Type: $sellerWasteType',
-                    //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    // ),
-                    // Uncomment and customize the following lines if needed
-                    // Text('Latitude: $latitude'),
-                    // Text('Longitude: $longitude'),
-
-                    // Buttons without actions
+                   
 
                     SizedBox(
                       height: 20,
@@ -185,7 +176,9 @@ class _BuyerHomeState extends State<BuyerHome> {
           print('Invalid seller request data');
         }
       });
+      socket.on('cancel', (data) => cancelledRequestRecived());
     });
+    //socket.on(_user?.email ?? '', (data) =>cancelledRequestRecived());
   }
 
   Future<void> acceptRequest(Map<String, dynamic> data) async {
@@ -625,7 +618,7 @@ class SellerInfo {
   });
 }
 
-class SellerInfoPanel extends StatelessWidget {
+class SellerInfoPanel extends StatefulWidget {
   late Set<Marker> markers;
   late GoogleMapController googleMapController;
   late SellerInfo sellerInfo;
@@ -636,6 +629,17 @@ class SellerInfoPanel extends StatelessWidget {
     required this.sellerInfo,
   });
 
+     // Set hasAcceptedRequest to false
+
+
+  @override
+  State<SellerInfoPanel> createState() => _SellerInfoPanelState();
+}
+
+ bool hasAcceptedRequest = true; 
+  late GoogleMapController googleMapController;
+
+class _SellerInfoPanelState extends State<SellerInfoPanel> {
   Future<bool?> showCancelConfirmationDialog(BuildContext context) async {
     return showDialog<bool>(
       context: context,
@@ -662,20 +666,30 @@ class SellerInfoPanel extends StatelessWidget {
     );
   }
 
+// this is for cancelletion of request after request is accepted
   void cancelRequest(BuildContext context) async {
     bool? confirmCancel = await showCancelConfirmationDialog(context);
 
     if (confirmCancel == true) {
-      // Navigator.pop(context);
-      // Fluttertoast.showToast(
-      //   msg: "Your request has been cancelled",
-      //   toastLength: Toast.LENGTH_SHORT,
-      //   gravity: ToastGravity.BOTTOM,
-      //   backgroundColor: Colors.black,
-      //   textColor: Colors.white,
-      // );
+
+      setState(() {
+      hasAcceptedRequest = false; // Set hasAcceptedRequest to false
+    });
+      Navigator.pop(context);
+      
+      Fluttertoast.showToast(
+        msg: "Your request has been cancelled",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+      );
       // Perform cancellation actions here
     }
+  }
+
+  void hasCompleted(){
+
   }
 
   @override
@@ -719,14 +733,14 @@ class SellerInfoPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Name: ${sellerInfo.name}',
+                  'Name: ${widget.sellerInfo.name}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   height: 10,
                 ),
                 Text(
-                  'Location: ${sellerInfo.locationName}',
+                  'Location: ${widget.sellerInfo.locationName}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 // SizedBox(
@@ -736,7 +750,7 @@ class SellerInfoPanel extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Phone: ${sellerInfo.PhoneNumber}',
+                      'Phone: ${widget.sellerInfo.PhoneNumber}',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -760,7 +774,7 @@ class SellerInfoPanel extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     // Check if onCancelPressed is not null, then call it
-                    cancelRequest.call(context);
+                    // cancelRequest.call(context);
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -784,7 +798,7 @@ class SellerInfoPanel extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     // Check if onCancelPressed is not null, then call it
-                    cancelRequest.call(context);
+                    hasCompleted.call();
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -814,7 +828,7 @@ class SellerInfoPanel extends StatelessWidget {
           target: LatLng(27.672468, 85.337924),
           zoom: 14,
         ),
-        markers: markers,
+        markers: widget.markers,
         zoomControlsEnabled: false,
         mapType: MapType.normal,
         onMapCreated: (GoogleMapController controller) {
