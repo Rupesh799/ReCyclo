@@ -11,7 +11,7 @@ admin.initializeApp({
 
 const app = express();
 const port = process.env.PORT || 3000;
-const server = http.createServer(app).listen(port, "192.168.10.71");
+const server = http.createServer(app).listen(port, "192.168.62.25");
 const io = require("socket.io")(server);
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
@@ -170,7 +170,9 @@ io.on("connection", (socket) => {
       
   
           // Emit an event to the selected buyer with the seller's request information
-          io.emit("seller_request", {
+          //selected buyer id
+        
+          io.emit(selectedBuyer.email, {
             buyerEmail: selectedBuyer.email,
             sellerInfo: {
               sellerName: data.Name,
@@ -208,6 +210,16 @@ io.on("connection", (socket) => {
     });
     // Add your specific logic here
   });
+  //seller
+// emit("selected_buyer")
+// //server
+// on(selected_buyer){
+//   emit("buyer_related_data")
+// }
+// //buyer
+// on("buyer_related_data"){
+
+// }
 
   socket.on("reject_request", (data) => {
     // Handle the rejected request logic
@@ -216,6 +228,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("cancel_process", (data)=>{
-    console.log( "Cancelled by Seller" , data);
+    console.log(data);
+    io.emit( 'pickup_canceled' );
   })
 });

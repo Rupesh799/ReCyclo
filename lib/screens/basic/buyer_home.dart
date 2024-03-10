@@ -41,16 +41,7 @@ class _BuyerHomeState extends State<BuyerHome> {
   bool hasAcceptedRequest = false;
   late SellerInfo sellerInfo;
   @override
-  void initState() {
-    super.initState();
-    //initialization of socket
-    socket = io.io('http://192.168.10.71:3000', <String, dynamic>{
-      'transport': ['webSocket'],
-      'autoConnect': true,
-    });
-
-    socket.connect();
-
+  Future<void> buyer() async {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       setState(() {
         _user = user;
@@ -61,112 +52,139 @@ class _BuyerHomeState extends State<BuyerHome> {
         updateStatus(); // Call the updateStatus method to update the status in the database
       });
     });
-
-    // Initialize Firebase
     Firebase.initializeApp().then((value) {
       firestore = FirebaseFirestore.instance;
       getCurrentLocationOfUserAndFetchName();
       getCurrentLocation();
     });
+  }
 
-    // Listen for the pickup_request event
-    socket.on('seller_request', (data) {
-      print('Seller request received: $data');
+  void initState() {
+    super.initState();
+    //initialization of socket
+    socket = io.io('http://192.168.62.25:3000', <String, dynamic>{
+      'transport': ['webSocket'],
+      'autoConnect': true,
+    });
 
-      // Check if the required fields are present in the data
-      if (data != null &&
-          data.containsKey('sellerInfo') &&
-          data['sellerInfo'] is Map<String, dynamic>) {
-        Map<String, dynamic> sellerInfo = data['sellerInfo'];
+    socket.connect();
+    // futerFn().then{}
 
-        // Extracting seller details
-        String sellerName = sellerInfo['sellerName'];
-        String sellerLocationName = sellerInfo['sellerPlaceName'];
-        // List sellerWasteType = sellerInfo['sellerWasteType'];
-        // Accessing nested location data
-        // Map<String, dynamic> sellerLocation = sellerInfo['sellerLocation'];
-        // double latitude = sellerLocation['latitude'];
-        // double longitude = sellerLocation['longitude'];
+    
+    buyer().then((value) {
+      socket.on(
+          'pickup_canceled',
+          (data) => {
+                Fluttertoast.showToast(
+                  msg: "seller cancelled the request",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Color.fromARGB(255, 8, 149, 128),
+                  textColor: Colors.white,
+                )
+              });
 
-        // Show dialog to the user
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: Text(
-              'New Pickup Request',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            content: Container(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Name: $sellerName',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Location: $sellerLocationName',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+      // Listen for the pickup_request _user.email
+      socket.on(_user?.email ?? "", (data) {
+        print('Seller request received: $data');
 
-                  // SizedBox(height: 10),
-                  // Text(
-                  //   'Waste Type: $sellerWasteType',
-                  //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  // ),
-                  // Uncomment and customize the following lines if needed
-                  // Text('Latitude: $latitude'),
-                  // Text('Longitude: $longitude'),
+        // Check if the required fields are present in the data
+        if (data != null &&
+            data.containsKey('sellerInfo') &&
+            data['sellerInfo'] is Map<String, dynamic>) {
+          Map<String, dynamic> sellerInfo = data['sellerInfo'];
 
-                  // Buttons without actions
+          // Extracting seller details
+          String sellerName = sellerInfo['sellerName'];
+          String sellerLocationName = sellerInfo['sellerPlaceName'];
+          // List sellerWasteType = sellerInfo['sellerWasteType'];
+          // Accessing nested location data
+          // Map<String, dynamic> sellerLocation = sellerInfo['sellerLocation'];
+          // double latitude = sellerLocation['latitude'];
+          // double longitude = sellerLocation['longitude'];
 
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        width: 120, // Set a specific width for the button
-                        child: ElevatedButton(
-                          onPressed: () {
-                            rejectRequest(data);
-                            Navigator.pop(context);
-                          }, // Add your action or set to null
-                          child: Text(
-                            'Reject',
-                            style: TextStyle(color: Colors.white),
+          // Show dialog to the user
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: Text(
+                'New Pickup Request',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              content: Container(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Name: $sellerName',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Location: $sellerLocationName',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+
+                    // SizedBox(height: 10),
+                    // Text(
+                    //   'Waste Type: $sellerWasteType',
+                    //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    // ),
+                    // Uncomment and customize the following lines if needed
+                    // Text('Latitude: $latitude'),
+                    // Text('Longitude: $longitude'),
+
+                    // Buttons without actions
+
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 120, // Set a specific width for the button
+                          child: ElevatedButton(
+                            onPressed: () {
+                              rejectRequest(data);
+                              Navigator.pop(context);
+                            }, // Add your action or set to null
+                            child: Text(
+                              'Reject',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent),
                           ),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent),
                         ),
-                      ),
-                      Container(
-                        width: 120, // Set a specific width for the button
-                        child: ElevatedButton(
-                          onPressed: () {
-                            acceptRequest(data);
-                            Navigator.pop(context);
-                          }, // Add your action or set to null
-                          child: Text(
-                            'Accept',
-                            style: TextStyle(color: Colors.white),
+                        Container(
+                          width: 120, // Set a specific width for the button
+                          child: ElevatedButton(
+                            onPressed: () {
+                              acceptRequest(data);
+                              Navigator.pop(context);
+                            }, // Add your action or set to null
+                            child: Text(
+                              'Accept',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      } else {
-        print('Invalid seller request data');
-      }
+          );
+        } else {
+          print('Invalid seller request data');
+        }
+      });
     });
   }
 
@@ -233,6 +251,7 @@ class _BuyerHomeState extends State<BuyerHome> {
   @override
   void dispose() {
     socket.disconnect();
+    _user = null;
     super.dispose();
   }
 
@@ -718,15 +737,20 @@ class SellerInfoPanel extends StatelessWidget {
                   children: [
                     Text(
                       'Phone: ${sellerInfo.PhoneNumber}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     CircleAvatar(
-                      
                       // color: Colors.green,
                       radius: 20,
                       backgroundColor: Color.fromARGB(255, 8, 149, 128),
-                      child: IconButton( onPressed: () {  },
-                                        icon: const Icon(Icons.call,color: Colors.white,),),
+                      child: IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.call,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -740,9 +764,8 @@ class SellerInfoPanel extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.red
-                    ),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.red),
                     padding: EdgeInsets.all(12),
                     // color: Color.fromARGB(255, 187, 16, 4),
                     alignment: Alignment.center,
@@ -755,7 +778,9 @@ class SellerInfoPanel extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 10,),
+                SizedBox(
+                  height: 10,
+                ),
                 GestureDetector(
                   onTap: () {
                     // Check if onCancelPressed is not null, then call it
@@ -763,9 +788,8 @@ class SellerInfoPanel extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.greenAccent
-                    ),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.greenAccent),
                     padding: EdgeInsets.all(12),
                     // color: Color.fromARGB(255, 187, 16, 4),
                     alignment: Alignment.center,

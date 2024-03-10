@@ -58,7 +58,7 @@ class _AccountSettingState extends State<AccountSetting> {
 
   void _initializeSocket() {
     // Replace with your server URL
-    socket = io.io('http://your-server-url', <String, dynamic>{
+    socket = io.io('http://192.168.62.25:3000', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });

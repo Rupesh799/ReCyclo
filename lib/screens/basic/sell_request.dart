@@ -109,9 +109,9 @@ class _SellRequestState extends State<SellRequest> {
             PhoneNumber: data['buyerInfo']['buyerPhoneNumber'] ?? '',
           );
           print('Updated buyerInfo: $buyerInfo');
-           setState(() {
-        showFindingBuyerAnimation = false;
-      });
+          setState(() {
+            showFindingBuyerAnimation = false;
+          });
         } else {
           // Handle the case where the received data or required properties are null
           print("Received data or required properties are null");
@@ -175,12 +175,6 @@ class _SellRequestState extends State<SellRequest> {
       markers: markers,
       googleMapController: googleMapController,
       buyerInfo: buyerInfo,
-      // onCancelPressed: () {
-      //   // Implement the logic to cancel the request if needed
-      //   // This method will be called when the "Cancel Request" button is pressed
-      //   // For example:
-      //   // cancelRequest(context);
-      // },
     );
   }
 
@@ -220,10 +214,9 @@ class _SellRequestState extends State<SellRequest> {
             .doc(user.uid)
             .get();
 
-
- setState(() {
-        showFindingBuyerAnimation = true;
-      });
+        setState(() {
+          showFindingBuyerAnimation = true;
+        });
         // Check if the seller info exists
         if (sellerInfo.exists) {
           String sellerFullname = sellerInfo['fullname'];
@@ -570,7 +563,7 @@ class BuyerInfo {
 class BuyerInfoPanel extends StatelessWidget {
   late Set<Marker> markers;
   late GoogleMapController googleMapController;
-   BuyerInfo buyerInfo;
+  BuyerInfo buyerInfo;
 
   BuyerInfoPanel({
     required this.markers,
@@ -607,18 +600,19 @@ class BuyerInfoPanel extends StatelessWidget {
 
   void cancelRequest(BuildContext context) async {
     bool? confirmCancel = await showCancelConfirmationDialog(context);
+    String? cancelledMessage = "Request has been cancelled by seller";
 
     if (confirmCancel == true) {
-       socket.emit('cancel_process');
+      socket.emit('cancel_process',cancelledMessage);
       // Perform cancellation actions here
       Navigator.pop(context);
       Fluttertoast.showToast(
-    msg: "Your request has been cancelled",
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.BOTTOM,
-    backgroundColor: Color.fromARGB(255, 8, 149, 128),
-    textColor: Colors.white,
-  );
+        msg: "Your request has been cancelled",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Color.fromARGB(255, 8, 149, 128),
+        textColor: Colors.white,
+      );
     }
   }
 
@@ -681,15 +675,20 @@ class BuyerInfoPanel extends StatelessWidget {
                   children: [
                     Text(
                       'Phone: ${buyerInfo.PhoneNumber}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     CircleAvatar(
-                      
                       // color: Colors.green,
                       radius: 20,
                       backgroundColor: Color.fromARGB(255, 8, 149, 128),
-                      child: IconButton( onPressed: () {  },
-                                        icon: const Icon(Icons.call,color: Colors.white,),),
+                      child: IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.call,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -703,9 +702,8 @@ class BuyerInfoPanel extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.red
-                    ),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.red),
                     padding: EdgeInsets.all(12),
                     // color: Color.fromARGB(255, 187, 16, 4),
                     alignment: Alignment.center,

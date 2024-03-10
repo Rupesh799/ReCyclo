@@ -20,7 +20,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   // Initialize Socket.IO client
-  socket = io.io('http://192.168.10.71:3000', <String, dynamic>{
+  socket = io.io('http://192.168.62.25:3000', <String, dynamic>{
     'transports': ['websocket'],
     'autoConnect': false,
   });

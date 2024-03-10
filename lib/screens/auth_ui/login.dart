@@ -34,7 +34,7 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     // Replace the URL with your server URL
-    socket = io.io('http://192.168.10.71:3000', <String, dynamic>{
+    socket = io.io('http://192.168.62.25:3000', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });
