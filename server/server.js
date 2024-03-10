@@ -201,7 +201,10 @@ io.on("connection", (socket) => {
         buyerName: data.buyerInfo.buyerFullName,
         buyerPhoneNumber: data.buyerInfo.buyerPhoneNumber,
         buyerPlaceName: data.buyerInfo.buyerplaceName,
+      // console.log('placename',buyerPlaceName);
+
       },
+
     });
     // Add your specific logic here
   });

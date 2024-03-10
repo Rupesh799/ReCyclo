@@ -15,7 +15,7 @@ class _FindingBuyerAnimationState extends State<FindingBuyerAnimation>
     super.initState();
 
     _controller = AnimationController(
-     
+      duration: Duration(seconds: 2),
       vsync: this,
     );
 

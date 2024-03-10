@@ -105,7 +105,7 @@ class _SellRequestState extends State<SellRequest> {
           hasBuyerInformation = true;
           buyerInfo = BuyerInfo(
             name: data['buyerInfo']['buyerName'] ?? '',
-            locationName: data['buyerInfo']['buyerplaceName'] ?? '',
+            locationName: data['buyerInfo']['buyerPlaceName'] ?? '',
             PhoneNumber: data['buyerInfo']['buyerPhoneNumber'] ?? '',
           );
           print('Updated buyerInfo: $buyerInfo');
@@ -666,13 +666,13 @@ class BuyerInfoPanel extends StatelessWidget {
                   'Name: ${buyerInfo.name}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Location: ${buyerInfo.locationName}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // Text(
+                //   'Location: ${buyerInfo.locationName}',
+                //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                // ),
                 // SizedBox(
                 //   height: 10,
                 // ),

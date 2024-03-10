@@ -755,6 +755,29 @@ class SellerInfoPanel extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(height: 10,),
+                GestureDetector(
+                  onTap: () {
+                    // Check if onCancelPressed is not null, then call it
+                    cancelRequest.call(context);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.greenAccent
+                    ),
+                    padding: EdgeInsets.all(12),
+                    // color: Color.fromARGB(255, 187, 16, 4),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Completed',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             )
             // Add more seller information as needed
